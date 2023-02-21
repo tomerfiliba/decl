@@ -18,9 +18,11 @@ type MyEnv struct {
 
 func main() {
     args := MyArgs{}
+    LoadArgsSpec(&args)
+
     env := MyEnv{}
     LoadEnvSpec(&env)
-    LoadArgsSpec(&args)
+    
     ...
 }
 ```
