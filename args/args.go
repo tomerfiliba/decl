@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func LoadArgsSpec(argsSpec interface{}) error {
@@ -63,6 +64,30 @@ func LoadArgsSpecFrom(argsSpec interface{}, osArgs []string) error {
 
 		case string:
 			fv.SetString(swVal)
+
+		case time.Duration:
+			dur, err := time.ParseDuration(strings.TrimSpace(swVal))
+			if err != nil {
+				v, err2 := strconv.ParseInt(strings.TrimSpace(swVal), 10, 64)
+				if err2 != nil {
+					return fmt.Errorf("Cannot parse %v (%s) - %v", swVal, f.Name, err)
+				}
+				// assume seconds
+				dur = time.Duration(v) * time.Second
+			}
+
+			fv.SetInt(int64(dur))
+
+		case time.Time:
+			for _, layout := range []string{time.RFC3339, time.RFC1123, time.RFC1123Z, time.RFC822, time.RFC822Z,
+				time.UnixDate, time.DateTime, time.DateOnly, time.TimeOnly} {
+				tm, err := time.Parse(layout, strings.TrimSpace(swVal))
+				if err == nil {
+					fv.Set(reflect.ValueOf(tm))
+					return nil
+				}
+			}
+			return fmt.Errorf("Cannot parse %v (%s) as any known time format", swVal, f.Name)
 
 		case int, int8, int16, int32, int64:
 			v, err := strconv.ParseInt(strings.TrimSpace(swVal), 10, 64)

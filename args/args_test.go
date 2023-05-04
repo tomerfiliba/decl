@@ -1,18 +1,22 @@
 package args_test
 
 import (
-	declargs "github.com/tomerfiliba/decl/args"
 	"testing"
+	"time"
+
+	declargs "github.com/tomerfiliba/decl/args"
 
 	"github.com/stretchr/testify/assert"
 )
 
 type Spec struct {
-	Verbose  bool   `arg:"v,verbose"`
-	Quiet    bool   `arg:"quiet=false"`
-	Level    int    `arg:"l=5"`
-	Required int    `arg:"r"`
-	Filename string `arg:"*"`
+	Verbose   bool          `arg:"v,verbose"`
+	Quiet     bool          `arg:"quiet=false"`
+	Level     int           `arg:"l=5"`
+	Required  int           `arg:"r"`
+	Interval  time.Duration `arg:"d=5s"`
+	Timestamp time.Time     `arg:"t=Mon Jan 2 03:04:05 UTC 2000"`
+	Filename  string        `arg:"*"`
 }
 
 func TestGoodPath(t *testing.T) {
@@ -20,9 +24,14 @@ func TestGoodPath(t *testing.T) {
 	err := declargs.LoadArgsSpecFrom(&spec, []string{"foo", "-v", "--quiet", "-r7", "/tmp/bar"})
 	assert.NoError(t, err)
 
+	ts, err := time.Parse(time.RFC3339, "2000-01-02T03:04:05Z")
+	assert.NoError(t, err)
+
 	assert.True(t, spec.Verbose)
 	assert.Equal(t, 5, spec.Level)
 	assert.Equal(t, 7, spec.Required)
+	assert.Equal(t, ts, spec.Timestamp)
+	assert.Equal(t, 5*time.Second, spec.Interval)
 	assert.True(t, spec.Quiet)
 	assert.Equal(t, spec.Filename, "/tmp/bar")
 }
