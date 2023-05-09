@@ -141,3 +141,20 @@ func TestEndOfSwitches(t *testing.T) {
 	assert.False(t, spec.F)
 	assert.Equal(t, spec.CatchAll, []string{"--flag", "spam"})
 }
+
+func TestHelpMsg(t *testing.T) {
+	spec := struct {
+		Flag     bool     `arg:"f,flag"`
+		Foo      int      `arg:"foo=7" argHelp:"number of foo fighets to summon"`
+		Bar      int      `arg:"bar" argHelp:"number of fire fighets to summon"`
+		ReqArg   string   `arg:"*"`
+		RestArgs []string `arg:"*"`
+	}{}
+	parsed, err := declargs.ParseArgsSpec(&spec)
+	assert.NoError(t, err)
+	s := parsed.String()
+	assert.Contains(t, s, "number of foo fighets to summon; defaults to 7")
+	assert.Contains(t, s, "number of fire fighets to summon; required")
+	assert.Contains(t, s, "-f --flag")
+	assert.Contains(t, s, "ReqArg RestArgs...")
+}
