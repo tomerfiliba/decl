@@ -258,7 +258,7 @@ func LoadArgsSpecFrom(argsSpec interface{}, osArgs []string) error {
 	}
 	if _, ok := parsed.LongSwitches["help"]; !ok {
 		// add --help as "help switch"
-		parsed.ShortSwitches["help"] = ArgInfo{-1, false}
+		parsed.LongSwitches["help"] = ArgInfo{-1, false}
 	}
 
 	var posArgs []string
